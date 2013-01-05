@@ -1,5 +1,5 @@
-## Data to XML or HTML Generator
-This is a simple utility for generating XML or HTML files for each record in a DB Table (MySQL).
+## Data to HTML Generator
+This is a simple utility for generating HTML files for each record in a DB Table (MySQL).
 
 ---
 
