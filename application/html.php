@@ -2,22 +2,23 @@
 
 require_once('tbs_class.php');
 require_once('tbs_plugin_cache.php');
-require_once('Database.php');
+require_once('database.php');
 
 $FileName = 0;
+$fileName = 0;
 
 function write($buffer)
 {
     global $FileName;
 
-    $newpage = str_replace("{greeting}", "You Rock", $buffer);
-
     $filename = ( __DIR__ . '/../html/' . $FileName . '.html');
     $fp = fopen($filename, 'w+');
-    fwrite($fp, $newpage);
+    fwrite($fp, $buffer);
     fclose($fp);
 
-    return ($newpage);
+    $FileName = 0;
+
+    //return ($newpage);
 }
 
 $htmlFolderLocation = __DIR__ . '/../html/';
@@ -52,29 +53,51 @@ for($i=0; $i<count($resultArray); $i++)
     ob_clean();
 }
 
-$cnx_id = mysql_connect('localhost','root','root');
-mysql_select_db('musicbrainz',$cnx_id);
+function createDistrictIndex($districtID, $genratedFileName)
+{
+	global $fileName;
 
-$sql_ok = ( isset($cnx_id) && is_resource($cnx_id) ) ? 1 : 0;
-if ($sql_ok==0) $cnx_id = 'clear';
+	$cnx_id = mysql_connect('localhost','root','root');
+	mysql_select_db('musicbrainz',$cnx_id);
 
-$fileName = "index";
+	$sql_ok = ( isset($cnx_id) && is_resource($cnx_id) ) ? 1 : 0;
+	if ($sql_ok==0) $cnx_id = 'clear';
 
-$TBSindex = new clsTinyButStrong;
+	$fileName = $genratedFileName;
 
-$TBSindex->PlugIn(TBS_INSTALL, TBS_CACHE, '../html/', '*.html');
-$TBSindex->PlugIn(TBS_CACHE, $fileName, 0);
+	$TBSindex = new clsTinyButStrong;
 
-$TBSindex->LoadTemplate('template.html');
+	$TBSindex->PlugIn(TBS_INSTALL, TBS_CACHE, '../html/', '*.html');
+	$TBSindex->PlugIn(TBS_CACHE, $fileName, 0);
 
-$TBSindex->MergeBlock('blk1',$cnx_id,'SELECT * FROM mb_releases');
+	$TBSindex->LoadTemplate('template.html');
+	
+	if($districtID == 10)
+	{
+		$queryString = 'SELECT * FROM mb_releases';
+	}else{
+		
+	}
+	
+	$TBSindex->MergeBlock('blk1', $cnx_id , $queryString );
 
-$TBSindex->Show();
+	$TBSindex->Show();
 
-$buffer = ob_get_contents();
-write($buffer);
-ob_clean();
+	$buffer = ob_get_contents();
+	write($buffer);
+	ob_clean();
+	
+}
 
-echo $buffer;
+	
+createDistrictIndex(10,"index");
+
+
+
+
+echo "DONE!";
+echo "<br>";
+echo '<a href = "../html/index.html">Here is the index file</a> ';
+//echo $buffer;
 
 ob_end_flush();
